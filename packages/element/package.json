@@ -1,0 +1,53 @@
+{
+  "name": "@covercropper/element",
+  "version": "0.1.0-beta.0",
+  "description": "The one true CoverCropper Web Component implementation.",
+  "type": "module",
+  "license": "MIT",
+  "sideEffects": true,
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --dts --sourcemap --clean --external @covercropper/core"
+  },
+  "dependencies": {
+    "@covercropper/core": "workspace:*"
+  },
+  "author": "CoverCropper contributors",
+  "keywords": [
+    "image-cropper",
+    "cover-cropper",
+    "avatar-cropper",
+    "banner-cropper",
+    "web-component",
+    "cropper",
+    "cover-safe",
+    "image-editor",
+    "custom-element",
+    "web-component"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/clrockrock/covercropper.git",
+    "directory": "packages/element"
+  },
+  "homepage": "https://github.com/clrockrock/covercropper#readme",
+  "bugs": {
+    "url": "https://github.com/clrockrock/covercropper/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

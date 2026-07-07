@@ -1,0 +1,49 @@
+{
+  "name": "covercropper-workspace",
+  "version": "0.1.0-beta.0",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "packageManager": "pnpm@11.10.0",
+  "scripts": {
+    "build": "pnpm -r --sort build",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.base.json --noEmit",
+    "lint": "tsc -p tsconfig.base.json --noEmit",
+    "pack:dry-run": "pnpm -r --filter \"./packages/*\" pack --dry-run",
+    "publish:beta": "pnpm -r --filter \"./packages/*\" publish --tag beta --access public --no-git-checks"
+  },
+  "devDependencies": {
+    "@angular/core": "^19.2.0",
+    "@types/node": "^22.15.0",
+    "@types/react": "^19.1.0",
+    "happy-dom": "^20.10.6",
+    "react": "^19.1.0",
+    "rxjs": "^7.8.0",
+    "tsup": "^8.4.0",
+    "typescript": "^5.8.0",
+    "vite": "^6.3.0",
+    "vitest": "^3.2.0",
+    "vue": "^3.5.0"
+  },
+  "description": "Cover-safe image cropper workspace with Web Component, React, Vue, and Angular packages.",
+  "keywords": [
+    "image-cropper",
+    "cover-cropper",
+    "avatar-cropper",
+    "banner-cropper",
+    "web-component",
+    "cropper",
+    "cover-safe",
+    "image-editor"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/clrockrock/covercropper.git"
+  },
+  "homepage": "https://github.com/clrockrock/covercropper#readme",
+  "bugs": {
+    "url": "https://github.com/clrockrock/covercropper/issues"
+  },
+  "author": "CoverCropper contributors"
+}

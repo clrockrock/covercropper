@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+  <defs><linearGradient id="g" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#2563eb"/><stop offset="1" stop-color="#f97316"/></linearGradient></defs>
+  <rect width="1600" height="900" fill="url(#g)"/>
+  <text x="800" y="475" text-anchor="middle" font-family="Arial" font-size="96" fill="white">CoverCropper</text>
+</svg>

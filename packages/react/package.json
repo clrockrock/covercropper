@@ -1,0 +1,56 @@
+{
+  "name": "@covercropper/react",
+  "version": "0.1.0-beta.0",
+  "description": "React wrapper for the CoverCropper Web Component.",
+  "type": "module",
+  "license": "MIT",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsup src/index.tsx --format esm --dts --sourcemap --clean --external react --external @covercropper/element --external @covercropper/core"
+  },
+  "dependencies": {
+    "@covercropper/element": "workspace:*"
+  },
+  "peerDependencies": {
+    "react": ">=18"
+  },
+  "author": "CoverCropper contributors",
+  "keywords": [
+    "image-cropper",
+    "cover-cropper",
+    "avatar-cropper",
+    "banner-cropper",
+    "web-component",
+    "cropper",
+    "cover-safe",
+    "image-editor",
+    "react",
+    "react-component"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/clrockrock/covercropper.git",
+    "directory": "packages/react"
+  },
+  "homepage": "https://github.com/clrockrock/covercropper#readme",
+  "bugs": {
+    "url": "https://github.com/clrockrock/covercropper/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

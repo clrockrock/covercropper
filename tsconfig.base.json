@@ -1,0 +1,33 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "jsx": "react-jsx",
+    "experimentalDecorators": true,
+    "useDefineForClassFields": false,
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "baseUrl": ".",
+    "paths": {
+      "@covercropper/core": ["packages/core/src/index.ts"],
+      "@covercropper/element": ["packages/element/src/index.ts"],
+      "@covercropper/react": ["packages/react/src/index.tsx"],
+      "@covercropper/vue": ["packages/vue/src/index.ts"],
+      "@covercropper/angular": ["packages/angular/src/index.ts"]
+    }
+  },
+  "include": [
+    "packages/**/*.ts",
+    "packages/**/*.tsx",
+    "playground/src/**/*.ts",
+    "vitest.config.ts"
+  ]
+}

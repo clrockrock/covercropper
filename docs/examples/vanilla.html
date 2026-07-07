@@ -1,0 +1,11 @@
+<!doctype html>
+<html lang="en">
+  <body>
+    <cover-cropper src="/cover.jpg" aspect-ratio="1.7777777778"></cover-cropper>
+    <script type="module">
+      import '@covercropper/element'
+      const cropper = document.querySelector('cover-cropper')
+      cropper.addEventListener('export', (event) => console.log(event.detail))
+    </script>
+  </body>
+</html>
