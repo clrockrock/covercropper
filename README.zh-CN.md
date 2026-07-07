@@ -10,6 +10,10 @@ CoverCropper 是一个轻量开源的 **cover-safe 图片裁剪组件**。用户
 - 内置英文和简体中文 UI 文案。
 - V1 使用中性的 Shadow DOM 内置样式，不开放样式定制 API、slot、公共 CSS 变量或 `::part` 契约。
 
+## Playground
+
+在线体验：https://clrockrock.github.io/covercropper/
+
 ## 安装
 
 ```bash

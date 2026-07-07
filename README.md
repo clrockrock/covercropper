@@ -10,6 +10,10 @@ CoverCropper is a lightweight open-source **cover-safe image cropper**. It lets 
 - Built-in English and Simplified Chinese UI copy.
 - V1 ships neutral Shadow DOM styles and intentionally exposes no style customization API, slots, public CSS variables, or `::part` contract.
 
+## Playground
+
+Try it online: https://clrockrock.github.io/covercropper/
+
 ## Packages
 
 ```txt
