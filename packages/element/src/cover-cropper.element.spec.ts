@@ -22,6 +22,13 @@ const resizableState: CropperState = {
   selection: { x: 220, y: 110, width: 200, height: 200, aspectRatio: 1 }
 }
 
+const rotationSliderState: CropperState = {
+  image: { naturalWidth: 1000, naturalHeight: 500 },
+  stage: { width: 640, height: 420 },
+  imageTransform: { x: 320, y: 210, scale: 0.4, rotation: 0, flipX: false, flipY: false },
+  selection: { x: 220, y: 110, width: 200, height: 200, aspectRatio: 1 }
+}
+
 function stubPointerCapture(): void {
   HTMLElement.prototype.setPointerCapture ??= function setPointerCapture(): void {}
   HTMLElement.prototype.releasePointerCapture ??= function releasePointerCapture(): void {}
@@ -266,6 +273,25 @@ describe('@covercropper/element browser interactions', () => {
     slider.dispatchEvent(new Event('input', { bubbles: true }))
 
     expect(element.getState().imageTransform.rotation).toBe(90)
+  })
+
+  it('uses the pre-rotation baseline while dragging the rotation slider', () => {
+    const element = createReadyCropper('cover.jpg', rotationSliderState)
+    const slider = element.shadowRoot!.querySelector<HTMLInputElement>('input[type="range"]')!
+    const baseline = element.getState()
+
+    slider.dispatchEvent(new Event('pointerdown', { bubbles: true }))
+    slider.value = '44'
+    slider.dispatchEvent(new Event('input', { bubbles: true }))
+    const enlarged = element.getState()
+    slider.value = '0'
+    slider.dispatchEvent(new Event('input', { bubbles: true }))
+    const restored = element.getState()
+    slider.dispatchEvent(new Event('change', { bubbles: true }))
+
+    expect(enlarged.imageTransform.scale).toBeGreaterThan(baseline.imageTransform.scale)
+    expect(restored.imageTransform.rotation).toBe(0)
+    expect(restored.imageTransform.scale).toBeCloseTo(baseline.imageTransform.scale)
   })
 
   it('rotates left/right, flips, fits and resets through public methods', () => {

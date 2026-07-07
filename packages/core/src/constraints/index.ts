@@ -1,6 +1,6 @@
 import { clamp, dot, getImageAxes, isSelectionCovered, normalizeRotation, projectPoints, rectCenter, rectCorners, rectFromCenter, rotatePoint, snapRotation } from '../geometry'
 import { cloneState, normalizeState } from '../state'
-import type { ConstraintOptions, CropperState, Point, Rect, ResizeCorner } from '../types'
+import type { ConstraintOptions, CropperState, Point, Rect, ResizeCorner, RotationOptions } from '../types'
 
 const DEFAULT_MIN_SELECTION_WIDTH = 48
 const DEFAULT_MIN_SELECTION_HEIGHT = 48
@@ -169,11 +169,13 @@ export function zoomImage(state: CropperState, scaleFactor: number, focalPoint?:
   return ensureImageCoversSelection(next, options)
 }
 
-export function rotateImageTo(state: CropperState, rotation: number, options?: ConstraintOptions): CropperState {
-  const next = ensureImageCoversSelection(state, options)
+export function rotateImageTo(state: CropperState, rotation: number, options?: RotationOptions): CropperState {
+  const current = ensureImageCoversSelection(state, options)
+  const base = options?.rotationBaseState ? ensureImageCoversSelection({ ...options.rotationBaseState, image: current.image, stage: current.stage, selection: current.selection }, options) : current
+  const next = cloneState(base)
   const targetRotation = snapRotation(rotation, options?.rotationSnapStep ?? DEFAULT_ROTATION_SNAP_STEP, options?.rotationSnapThreshold ?? DEFAULT_ROTATION_SNAP_THRESHOLD)
-  const focal = rectCenter(next.selection)
-  const delta = normalizeRotation(targetRotation - next.imageTransform.rotation)
+  const focal = rectCenter(current.selection)
+  const delta = normalizeRotation(targetRotation - base.imageTransform.rotation)
   const rotatedFocalVector = rotatePoint({ x: focal.x, y: focal.y }, delta, { x: next.imageTransform.x, y: next.imageTransform.y })
   next.imageTransform.x += focal.x - rotatedFocalVector.x
   next.imageTransform.y += focal.y - rotatedFocalVector.y
@@ -181,7 +183,7 @@ export function rotateImageTo(state: CropperState, rotation: number, options?: C
   return ensureImageCoversSelection(next, options)
 }
 
-export function rotateImageBy(state: CropperState, delta: number, options?: ConstraintOptions): CropperState {
+export function rotateImageBy(state: CropperState, delta: number, options?: RotationOptions): CropperState {
   return rotateImageTo(state, state.imageTransform.rotation + delta, options)
 }
 

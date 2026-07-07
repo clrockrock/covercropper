@@ -151,6 +151,17 @@ describe('@covercropper/core cover-safe constraints', () => {
     expect(isSelectionCovered(snapped)).toBe(true)
   })
 
+  it('shrinks back to the rotation baseline scale during continuous rotation', () => {
+    const baseline = createState()
+    const enlarged = rotateImageTo(baseline, 44, { rotationBaseState: baseline })
+    const restored = rotateImageTo(enlarged, 0, { rotationBaseState: baseline })
+
+    expect(enlarged.imageTransform.scale).toBeGreaterThan(baseline.imageTransform.scale)
+    expect(restored.imageTransform.rotation).toBe(0)
+    expect(restored.imageTransform.scale).toBeCloseTo(baseline.imageTransform.scale)
+    expect(isSelectionCovered(restored)).toBe(true)
+  })
+
   it('fits image to the current selection and keeps cover safe', () => {
     const fitted = fitImageToSelection(zoomImage(createState(), 2))
     expect(fitted.imageTransform.scale).toBeCloseTo(getMinScaleToCoverSelection(fitted))

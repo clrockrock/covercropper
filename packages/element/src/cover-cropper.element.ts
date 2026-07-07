@@ -52,6 +52,7 @@ export class CoverCropperElement extends HTMLElement {
   private imageReady = false
   private interaction: Interaction | null = null
   private animationTimer: number | null = null
+  private rotationBaseState: CropperState | null = null
   private resizeObserver: ResizeObserver | null = null
   private externalValue: CropperState | null = null
   private aspectRatioValue = 1
@@ -109,7 +110,12 @@ export class CoverCropperElement extends HTMLElement {
     this.stageElement.addEventListener('pointerup', (event) => this.handlePointerEnd(event))
     this.stageElement.addEventListener('pointercancel', (event) => this.handlePointerEnd(event))
     this.stageElement.addEventListener('wheel', (event) => this.handleWheel(event), { passive: false })
-    this.sliderElement.addEventListener('input', () => this.rotateTo(Number(this.sliderElement.value), false))
+    this.sliderElement.addEventListener('pointerdown', () => this.captureRotationBaseState())
+    this.sliderElement.addEventListener('keydown', () => this.captureRotationBaseState())
+    this.sliderElement.addEventListener('input', () => { if (!this.rotationBaseState) this.captureRotationBaseState(); this.rotateTo(Number(this.sliderElement.value), false) })
+    this.sliderElement.addEventListener('change', () => this.clearRotationBaseState())
+    this.sliderElement.addEventListener('pointerup', () => this.clearRotationBaseState())
+    this.sliderElement.addEventListener('pointercancel', () => this.clearRotationBaseState())
   }
 
   get src(): string | Blob | File | null { return this.sourceValue }
@@ -163,13 +169,13 @@ export class CoverCropperElement extends HTMLElement {
 
   getState(): CropperState { if (!this.stateValue) throw new Error(this.currentMessages().errors.stateRequired); return serializeState(this.stateValue) }
   setState(state: CropperState): void { this.stateValue = ensureImageCoversSelection(normalizeState(state)); if (!this.initialState) this.initialState = this.getState(); this.render(); this.emitChange() }
-  reset(): void { if (this.initialState) { this.animateNextRender(); this.stateValue = serializeState(this.initialState); this.render(); this.emitChange() } else this.reinitialize() }
-  fit(): void { if (!this.stateValue) return; this.animateNextRender(); this.stateValue = fitImageToSelection(this.stateValue); this.render(); this.emitChange() }
+  reset(): void { this.clearRotationBaseState(); if (this.initialState) { this.animateNextRender(); this.stateValue = serializeState(this.initialState); this.render(); this.emitChange() } else this.reinitialize() }
+  fit(): void { if (!this.stateValue) return; this.clearRotationBaseState(); this.animateNextRender(); this.stateValue = fitImageToSelection(this.stateValue); this.render(); this.emitChange() }
   setDragMode(mode: DragMode): void { this.dragMode = mode; if (this.getAttribute('drag-mode') !== mode) this.setAttribute('drag-mode', mode); this.renderText() }
-  rotateTo(angle: number, animate = true): void { if (!this.stateValue || this.isLocked()) return; if (animate) this.animateNextRender(); this.stateValue = rotateImageTo(this.stateValue, angle); this.render(); this.emitChange() }
-  rotateLeft(): void { if (!this.stateValue || this.isLocked()) return; this.animateNextRender(); this.stateValue = rotateImageBy(this.stateValue, -90); this.render(); this.emitChange() }
-  rotateRight(): void { if (!this.stateValue || this.isLocked()) return; this.animateNextRender(); this.stateValue = rotateImageBy(this.stateValue, 90); this.render(); this.emitChange() }
-  flipHorizontal(): void { if (!this.stateValue || this.isLocked()) return; this.animateNextRender(); this.stateValue = flipHorizontal(this.stateValue); this.render(); this.emitChange() }
+  rotateTo(angle: number, animate = true): void { if (!this.stateValue || this.isLocked()) return; if (animate) this.animateNextRender(); this.stateValue = rotateImageTo(this.stateValue, angle, this.rotationBaseState ? { rotationBaseState: this.rotationBaseState } : undefined); this.render(); this.emitChange() }
+  rotateLeft(): void { if (!this.stateValue || this.isLocked()) return; this.clearRotationBaseState(); this.animateNextRender(); this.stateValue = rotateImageBy(this.stateValue, -90); this.render(); this.emitChange() }
+  rotateRight(): void { if (!this.stateValue || this.isLocked()) return; this.clearRotationBaseState(); this.animateNextRender(); this.stateValue = rotateImageBy(this.stateValue, 90); this.render(); this.emitChange() }
+  flipHorizontal(): void { if (!this.stateValue || this.isLocked()) return; this.clearRotationBaseState(); this.animateNextRender(); this.stateValue = flipHorizontal(this.stateValue); this.render(); this.emitChange() }
 
   async exportBlob(options: ExportOptions = {}): Promise<Blob> {
     const canvas = this.drawToCanvas(options)
@@ -200,6 +206,8 @@ export class CoverCropperElement extends HTMLElement {
   private currentMessages() { return getMessages(this.locale, this.messages) }
   private clearAnimationTimer(): void { if (this.animationTimer !== null) { window.clearTimeout(this.animationTimer); this.animationTimer = null } }
   private animateNextRender(): void { this.clearAnimationTimer(); this.stageElement.classList.add('is-animating'); this.animationTimer = window.setTimeout(() => { this.stageElement.classList.remove('is-animating'); this.animationTimer = null }, 220) }
+  private captureRotationBaseState(): void { if (!this.rotationBaseState && this.stateValue) this.rotationBaseState = this.getState() }
+  private clearRotationBaseState(): void { this.rotationBaseState = null }
 
   private renderText(): void {
     const messages = this.currentMessages()
@@ -254,7 +262,7 @@ export class CoverCropperElement extends HTMLElement {
   }
 
   private loadSource(): void {
-    this.revokeObjectUrl(); this.imageReady = false; this.stateValue = null; this.initialState = null; this.errorElement.hidden = true
+    this.clearRotationBaseState(); this.revokeObjectUrl(); this.imageReady = false; this.stateValue = null; this.initialState = null; this.errorElement.hidden = true
     if (!this.sourceValue) { this.imageElement.removeAttribute('src'); this.render(); return }
     if (this.crossOrigin) this.imageElement.crossOrigin = this.crossOrigin; else this.imageElement.removeAttribute('crossorigin')
     const src = typeof this.sourceValue === 'string' ? this.sourceValue : URL.createObjectURL(this.sourceValue)
@@ -272,12 +280,12 @@ export class CoverCropperElement extends HTMLElement {
       this.initialState = this.getState(); this.render(); this.emitChange()
     } catch (error) { this.fail(this.currentMessages().errors.invalidAspectRatio, error) }
   }
-  private handleResize(): void { if (!this.stateValue || !this.imageReady) return; const nextSize = this.measureStage(); if (Math.abs(nextSize.width - this.stateValue.stage.width) < 1 && Math.abs(nextSize.height - this.stateValue.stage.height) < 1) return; this.stateValue = ensureImageCoversSelection({ ...this.stateValue, stage: nextSize }); this.render(); this.emitChange() }
+  private handleResize(): void { if (!this.stateValue || !this.imageReady) return; this.clearRotationBaseState(); const nextSize = this.measureStage(); if (Math.abs(nextSize.width - this.stateValue.stage.width) < 1 && Math.abs(nextSize.height - this.stateValue.stage.height) < 1) return; this.stateValue = ensureImageCoversSelection({ ...this.stateValue, stage: nextSize }); this.render(); this.emitChange() }
   private measureStage() { return { width: Math.max(1, Math.round(this.stageElement.clientWidth || this.clientWidth || 640)), height: Math.max(1, Math.round(this.stageElement.clientHeight || 420)) } }
-  private handlePointerDown(event: PointerEvent): void { if (!this.stateValue || this.isLocked()) return; const corner = (event.target as HTMLElement).dataset?.corner as ResizeCorner | undefined; const point = this.eventPoint(event); this.interaction = corner ? { kind: 'resize', pointerId: event.pointerId, corner } : this.dragMode === 'selection' ? { kind: 'selection', pointerId: event.pointerId, last: point } : { kind: 'image', pointerId: event.pointerId, last: point }; this.stageElement.setPointerCapture(event.pointerId); this.dispatch('interaction-start', { state: this.getState() }); event.preventDefault() }
+  private handlePointerDown(event: PointerEvent): void { if (!this.stateValue || this.isLocked()) return; this.clearRotationBaseState(); const corner = (event.target as HTMLElement).dataset?.corner as ResizeCorner | undefined; const point = this.eventPoint(event); this.interaction = corner ? { kind: 'resize', pointerId: event.pointerId, corner } : this.dragMode === 'selection' ? { kind: 'selection', pointerId: event.pointerId, last: point } : { kind: 'image', pointerId: event.pointerId, last: point }; this.stageElement.setPointerCapture(event.pointerId); this.dispatch('interaction-start', { state: this.getState() }); event.preventDefault() }
   private handlePointerMove(event: PointerEvent): void { if (!this.stateValue || !this.interaction || this.interaction.pointerId !== event.pointerId || this.isLocked()) return; const point = this.eventPoint(event); if (this.interaction.kind === 'image') { const delta = { x: point.x - this.interaction.last.x, y: point.y - this.interaction.last.y }; this.stateValue = dragImage(this.stateValue, delta); this.interaction.last = point } else if (this.interaction.kind === 'selection') { const delta = { x: point.x - this.interaction.last.x, y: point.y - this.interaction.last.y }; this.stateValue = dragSelection(this.stateValue, delta); this.interaction.last = point } else this.stateValue = resizeSelectionFromCorner(this.stateValue, this.interaction.corner, point); this.render(); this.emitChange(); event.preventDefault() }
   private handlePointerEnd(event: PointerEvent): void { if (!this.interaction || this.interaction.pointerId !== event.pointerId) return; this.interaction = null; if (this.stageElement.hasPointerCapture(event.pointerId)) this.stageElement.releasePointerCapture(event.pointerId); if (this.stateValue) this.dispatch('interaction-end', { state: this.getState() }) }
-  private handleWheel(event: WheelEvent): void { if (!this.stateValue || this.isLocked()) return; event.preventDefault(); this.stateValue = zoomImage(this.stateValue, Math.exp(-event.deltaY * 0.001), this.eventPoint(event)); this.render(); this.emitChange() }
+  private handleWheel(event: WheelEvent): void { if (!this.stateValue || this.isLocked()) return; this.clearRotationBaseState(); event.preventDefault(); this.stateValue = zoomImage(this.stateValue, Math.exp(-event.deltaY * 0.001), this.eventPoint(event)); this.render(); this.emitChange() }
   private eventPoint(event: PointerEvent | WheelEvent): Point { const rect = this.stageElement.getBoundingClientRect(); return { x: event.clientX - rect.left, y: event.clientY - rect.top } }
   private drawToCanvas(options: ExportOptions): HTMLCanvasElement { if (!this.stateValue) throw new Error(this.currentMessages().errors.stateRequired); const plan = getExportRenderPlan(this.stateValue, options); const canvas = document.createElement('canvas'); canvas.width = plan.width; canvas.height = plan.height; const context = canvas.getContext('2d'); if (!context) throw new Error(this.currentMessages().errors.canvasUnsupported); context.save(); context.scale(plan.scaleX, plan.scaleY); context.translate(-plan.selection.x, -plan.selection.y); context.translate(plan.imageTransform.x, plan.imageTransform.y); context.rotate((plan.imageTransform.rotation * Math.PI) / 180); context.scale(plan.imageTransform.flipX ? -plan.imageTransform.scale : plan.imageTransform.scale, plan.imageTransform.flipY ? -plan.imageTransform.scale : plan.imageTransform.scale); context.drawImage(this.imageElement, -plan.image.naturalWidth / 2, -plan.image.naturalHeight / 2); context.restore(); return canvas }
   private parsePositiveNumber(value: string | null, fallback: number): number { const parsed = Number(value); return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback }

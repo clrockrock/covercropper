@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.0-beta.1
+
+Bug fix beta release.
+
+- Fixed continuous rotation scaling so the image can shrink back to the pre-rotation baseline when the target angle no longer requires the enlarged cover scale.
+- Added core and Web Component regression tests for rotation-slider baseline behavior.
+
 ## 0.1.0-beta.0
 
 Initial beta release.

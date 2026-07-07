@@ -59,6 +59,10 @@ export interface ConstraintOptions {
   rotationSnapThreshold?: number
 }
 
+export interface RotationOptions extends ConstraintOptions {
+  rotationBaseState?: CropperState
+}
+
 export interface ExportOptions {
   type?: string
   quality?: number
